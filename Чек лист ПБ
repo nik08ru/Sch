@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Чек-лист: Пожарная безопасность</title>
+    <title>Чек-лист: Пожарная безопасность (Школа №2075)</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -20,7 +20,7 @@
             overflow: hidden;
         }
         header {
-            background: #b22234; /* пожарный красный оттенок */
+            background: #b22234;
             color: white;
             padding: 18px 16px;
         }
@@ -44,12 +44,13 @@
             font-size: 0.85rem;
             color: #b22234;
         }
-        .general-panel input, .general-panel textarea {
+        .general-panel input, .general-panel select, .general-panel textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid #cbd5e1;
             border-radius: 14px;
             font-size: 16px;
+            background: white;
         }
         .sections-container {
             padding: 12px;
@@ -77,7 +78,6 @@
             font-size: 1rem;
             color: #a1222a;
         }
-        /* мобильные карточки */
         .items-mobile {
             display: flex;
             flex-direction: column;
@@ -127,7 +127,6 @@
             border: 1px solid #cbd5e1;
             font-size: 14px;
         }
-        /* десктопная таблица */
         .desktop-table {
             display: none;
             overflow-x: auto;
@@ -142,7 +141,6 @@
             .btn-group { position: static; margin-top: 20px; padding: 20px; border-top: 1px solid #e2e8f0; }
             body { padding-bottom: 20px; }
         }
-        /* кнопки */
         .btn-group {
             position: fixed;
             bottom: 0;
@@ -189,6 +187,7 @@
 <div class="container">
     <header>
         <h1>🔥 Чек-лист: Пожарная безопасность</h1>
+        <p style="margin:5px 0 0; font-size:0.8rem;">ГБОУ Школа № 2075 имени Е.А. Родионова</p>
     </header>
 
     <div id="generalPanel" class="general-panel"></div>
@@ -200,20 +199,37 @@
         <button id="resetDataBtn" class="reset-btn">🗑 Сброс</button>
     </div>
     <div id="statusMessage" class="status"></div>
-    <footer>✔ Данные сохраняются автоматически. Заполните все пункты.</footer>
+    <footer>✔ Данные автоматически сохраняются в браузере. Заполните все пункты.</footer>
 </div>
 
 <script>
-    // ===================== ВСЕ РАЗДЕЛЫ ПО ПОЖАРНОЙ БЕЗОПАСНОСТИ (полный список из вашего файла) =====================
+    // ========== ПОЛНЫЙ ЧЕК-ЛИСТ ПО ПОЖАРНОЙ БЕЗОПАСНОСТИ (все пункты) ==========
     const CHECKLIST = {
         generalFields: [
             { label: "Основание проведения мониторинга", field: "reason", type: "text" },
-            { label: "Наименование ОО", field: "org_name", type: "text" },
-            { label: "Руководитель ОО (приказ о назначении)", field: "director", type: "text" },
-            { label: "Адрес объекта", field: "address", type: "text" },
+            { label: "Наименование ОО", field: "org_name", type: "text", defaultValue: "ГБОУ Школа № 2075 имени Е.А. Родионова" },
+            { label: "Руководитель ОО (приказ о назначении)", field: "director", type: "text", defaultValue: "Радюн Сергей Болеславович" },
+            { 
+                label: "Адрес объекта", 
+                field: "address", 
+                type: "select",
+                options: [
+                    "г. Москва, Краснопахорский район, с. Красная Пахра, 23",
+                    "г. Москва, Краснопахорский район, с. Красная Пахра, 23 стр. 1",
+                    "г. Москва, Краснопахорский район, с. Красная Пахра, 24а",
+                    "г. Москва, Краснопахорский район, п. Шишкин Лес, 28",
+                    "г. Москва, Краснопахорский район, п. Шишкин Лес, 33",
+                    "г. Москва, Краснопахорский район, п. Курилово, ул. Школьная, 3",
+                    "г. Москва, Краснопахорский район, п. Курилово, ул. Центральная, 8",
+                    "г. Москва, Краснопахорский район, п. Щапово, 20",
+                    "г. Москва, Краснопахорский район, п. Щапово, 20 стр. 1",
+                    "г. Москва, Краснопахорский район, п. Щапово, 21 стр. 1",
+                    "г. Москва, Краснопахорский район, п. Щапово, 21, стр. 2",
+                    "г. Москва, Краснопахорский район, п. Былово, 1"
+                ]
+            },
             { label: "Сведения об объекте (назначение, год постройки)", field: "building_info", type: "text" },
             { label: "Представитель ОО", field: "rep_org", type: "text" },
-            { label: "Представитель ГКУ ДИОМ", field: "rep_diom", type: "text" },
             { label: "Дата мониторинга", field: "date", type: "date" }
         ],
         sections: [
@@ -293,10 +309,16 @@
     let appData = { general: {}, items: {} };
 
     function initStorage() {
-        const saved = localStorage.getItem('fire_checklist');
+        const saved = localStorage.getItem('fire_checklist_2075');
         if(saved) {
             try { appData = JSON.parse(saved); } catch(e) {}
         }
+        // Установка значений по умолчанию для полей general
+        CHECKLIST.generalFields.forEach(f => {
+            if(f.defaultValue && !appData.general[f.field]) {
+                appData.general[f.field] = f.defaultValue;
+            }
+        });
         CHECKLIST.sections.forEach(sec => {
             sec.subsections.forEach(sub => {
                 sub.items.forEach(item => {
@@ -308,7 +330,7 @@
         if(!appData.general) appData.general = {};
         saveToLocal();
     }
-    function saveToLocal() { localStorage.setItem('fire_checklist', JSON.stringify(appData)); }
+    function saveToLocal() { localStorage.setItem('fire_checklist_2075', JSON.stringify(appData)); }
     function showStatus(msg, isErr=false) {
         const span = document.getElementById('statusMessage');
         span.innerText = msg;
@@ -316,13 +338,23 @@
         setTimeout(() => span.innerText = '', 3000);
     }
 
-    // рендер
+    // рендер общей информации (с выпадающим списком для адреса)
     function renderGeneral() {
         const container = document.getElementById('generalPanel');
         let html = '';
         CHECKLIST.generalFields.forEach(f => {
-            html += `<div><label>${f.label}</label>
-                     <input type="${f.type}" id="gen_${f.field}" value="${escapeHtml(appData.general[f.field] || '')}" onchange="updateGeneral('${f.field}', this.value)"></div>`;
+            const value = appData.general[f.field] || '';
+            if(f.type === 'select') {
+                let optionsHtml = '';
+                f.options.forEach(opt => {
+                    optionsHtml += `<option value="${escapeHtml(opt)}" ${value === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`;
+                });
+                html += `<div><label>${f.label}</label>
+                         <select id="gen_${f.field}" onchange="updateGeneral('${f.field}', this.value)">${optionsHtml}</select></div>`;
+            } else {
+                html += `<div><label>${f.label}</label>
+                         <input type="${f.type}" id="gen_${f.field}" value="${escapeHtml(value)}" onchange="updateGeneral('${f.field}', this.value)"></div>`;
+            }
         });
         container.innerHTML = html;
     }
@@ -397,13 +429,14 @@
         appData.items[key][field] = value;
         saveToLocal();
         showStatus('Сохранено');
-        renderSections(); // обновляем отображение
+        renderSections(); // обновляем для синхронизации десктоп/мобиль
     };
 
     function escapeHtml(str) { if(!str) return ''; return String(str).replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
 
-    // отправка в Google Таблицу (замените URL)
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/ВАШ_ИДЕНТИФИКАТОР/exec';
+    // ========== НАСТРОЙКА GOOGLE ТАБЛИЦЫ (URL ВСТАВЛЕН) ==========
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqSy4wjFAdmyRFCfSdXw-Cc6yobyPecHrgr20vN8VY2b5SiqS61K40IIeIBqKQsduCbw/exec';
+
     async function sendToGoogle() {
         const payload = { general: appData.general, entries: [] };
         CHECKLIST.sections.forEach(sec => {
@@ -419,14 +452,25 @@
             });
         });
         try {
-            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
             showStatus('✅ Отправлено в Google Таблицу');
-        } catch(e) { showStatus('❌ Ошибка отправки', true); }
+        } catch(e) {
+            console.error(e);
+            showStatus('❌ Ошибка отправки. Проверьте интернет.', true);
+        }
     }
 
     function exportToExcel() {
-        const rows = [['Чек-лист пожарной безопасности'], []];
-        CHECKLIST.generalFields.forEach(f => rows.push([`${f.label}: ${appData.general[f.field] || ''}`]));
+        const rows = [['Чек-лист пожарной безопасности (ГБОУ Школа №2075)'], []];
+        CHECKLIST.generalFields.forEach(f => {
+            let val = appData.general[f.field] || '';
+            rows.push([`${f.label}: ${val}`]);
+        });
         rows.push(['Раздел','Подраздел','Отклонение','Показатель','Результат','Кол-во','Срок']);
         CHECKLIST.sections.forEach(sec => {
             sec.subsections.forEach(sub => {
@@ -446,7 +490,7 @@
 
     function resetData() {
         if(confirm('Сбросить все данные?')) {
-            localStorage.removeItem('fire_checklist');
+            localStorage.removeItem('fire_checklist_2075');
             appData = { general: {}, items: {} };
             initStorage();
             renderGeneral();
